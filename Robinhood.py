@@ -1,6 +1,12 @@
 import requests
 import urllib
 
+try:
+    from urllib import getproxies, quote, unquote
+except ImportError:
+    from urllib.request import getproxies
+    from urllib.parse import quote, unquote
+
 class Robinhood:
 
     endpoints = {
@@ -37,7 +43,7 @@ class Robinhood:
 
     def __init__(self, username, password):
         self.session = requests.session()
-        self.session.proxies = urllib.getproxies()
+        self.session.proxies = getproxies()
         self.username = username
         self.password = password
         self.headers = {
@@ -76,7 +82,7 @@ class Robinhood:
     def place_order(self, instrument, quantity=1, bid_price = None, transaction=None):
         if bid_price == None:
             bid_price = self.quote_data(instrument['symbol'])[0]['bid_price']
-        data = 'account=%s&instrument=%s&price=%f&quantity=%d&side=buy&symbol=%s&time_in_force=gfd&trigger=immediate&type=market' % (urllib.quote('https://api.robinhood.com/accounts/5PY93481/'), urllib.unquote(instrument['url']), float(bid_price), quantity, instrument['symbol']) 
+        data = 'account=%s&instrument=%s&price=%f&quantity=%d&side=buy&symbol=%s&time_in_force=gfd&trigger=immediate&type=market' % (quote('https://api.robinhood.com/accounts/5PY93481/'), unquote(instrument['url']), float(bid_price), quantity, instrument['symbol'])
         res = self.session.post(self.endpoints['orders'], data=data)
         return res
 
@@ -87,4 +93,3 @@ class Robinhood:
     def place_sell_order(self, instrument, quantity, bid_price=None):
         transaction = "sell"
         return self.place_order(instrument, quantity, bid_price, transaction)
-
